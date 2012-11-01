@@ -1,0 +1,14 @@
+application: bcn48
+version: 1
+runtime: python
+api_version: 1
+
+handlers:
+- url: /
+  script: helloworld.py
+
+- url: /write
+  script: preview.py
+
+- url: /css
+  static_dir: css

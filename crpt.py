@@ -1,42 +1,37 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
+# シリアルコード暗号化モジュール
 
-import Crypto.Cipher.AES as AES
-#import Crypto.Hash.Hmac as Hmac
-import datetime,time
+# CryptoはPythonの標準モジュールじゃないので別途インストールが必要
+# この辺からもってきてください（GAEでは使えるらしいです）
+# http://www.voidspace.org.uk/python/modules.shtml#pycrypto
+from Crypto.Cipher import CAST
+import base64
 
-#16,24,32byteの文字列が暗号化KEY
+# 暗号化用のキーを持つ変数（16バイトの倍数。たぶん）
 CRYPTO_KEY = "16bytes  str1ngs"
-crypto_object = AES.new( CRYPTO_KEY, AES.MODE_ECB )
 
-#unixtimeの取得
-d = datetime.datetime.today()
-utime = int( time.mktime( d.timetuple() ) )
+# 暗号化
+def CryptionMessage(message):
+    """
+        暗号化できる文字数は8の倍数です
+    """
+    crypto_object = CAST.new(CRYPTO_KEY)
+    crypto_message = crypto_object.encrypt(message)
+    en_cr_message = base64.b16encode(crypto_message)
 
-#暗号化できる文字列は16byteの倍数
-message = "0000000000000001"
-crypto_message = crypto_object.encrypt( message ) 
-decrypto_message = crypto_object.decrypt( crypto_message ) 
+    return en_cr_message
 
-crypto_message
+# 復号化
+def DecryptionMessage(message):
+    crypto_object = CAST.new(CRYPTO_KEY)
+    de_message = base64.b16decode(message)
+    decrypto_message = crypto_object.decrypt(de_message) 
 
-html  = '''Content-Type: text/html; charset=UTF-8
-<html>
-<head>
-<title>web-pro.appspot.com</title>
-</head>
-<body>
-<table>
-<tr><th>message     </th><td>%s </td></tr>
-<tr><th>encrypto      </th><td>%s </td></tr>
-<tr><th>decrypto  </th><td>%s </td></tr>
-</table>
-</body>
-<html>
-'''
-#print html % ( message, crypto_message, decrypto_message )
-filename = "D:\Data\\beacon\\BCN48\\test.html"
-w = open(filename, "w")
-w.write(html % ( message, crypto_message, decrypto_message ))
-w.flush()
-w.close
+    return decrypto_message
+
+
+if __name__ == "__main__":
+    a = CryptionMessage("00000001")
+    print a
+    print DecryptionMessage(a)

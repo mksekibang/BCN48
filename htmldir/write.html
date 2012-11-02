@@ -7,7 +7,7 @@
 			<link rel="stylesheet" type="text/css" href="/css/mystyle.css" />
 	</head>
 	<body>
-		<h1>{{errors}}</h1>
+		<h1>{{Title}}</h1>
 		<form action="/" method="post">
     	{% for field in form %}
 	        <div class="fieldWrapper">
@@ -24,12 +24,5 @@
     	{% endfor %}
     	<p><input type="submit" value="プレビュー" /></p>
 		</form>
-		{% for bbsdata in bbsdatas %}
-			<blockquote>
-				名前：{{bbsdata.name|escape}} メール： {{bbsdata.mail|escape}}
-				タイトル：{{bbsdata.title|escape}} 
-				内容： {{bbsdata.memo|escape}}
-			</blockquote>
-		{% endfor %}			
 	</body>
 </html>

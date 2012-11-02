@@ -5,15 +5,14 @@ from google.appengine.ext.webapp import template
 from google.appengine.ext import db
 import os
 import voting
+import crpt
 
 class MainPage(webapp.RequestHandler):
     
     def get(self):
-        votingdata = db.GqlQuery("SELECT * FROM votingdata ")
         params = {
-            'errors':'This Is Snake BBS',
-            'form':voting.votingform(),
-            'bbsdatas':votingdata
+            'Title':'BCN48第1回総選挙！！！',
+            'form':voting.votingform()
         }
         fpath = os.path.join(os.path.dirname(__file__),'htmldir','write.html')
         html = template.render(fpath,params)
@@ -27,13 +26,16 @@ class MainPage(webapp.RequestHandler):
         }
         if form.is_valid():
             entity = form.save(commit=False)
-            params = {
-                'name': entity.name,
-                'mail': entity.mail,
-                'title': entity.title,
-                'memo': entity.memo
-            }
+            #シリアルコードの桁数チェックをいれること（シリアルコードは16文字）
+            serial_decrypt = crpt.DecryptionMessage(entity.serialno)
+            if serial_decrypt > '00000000' and serial_decrypt < '100000000':
+                params = {
+                    'name': entity.name,
+                    'serialno': entity.serialno
+                }
             fpath = os.path.join(os.path.dirname(__file__),'htmldir','preview.html')
+            #else:
+                #シリアルコードがおかしい場合の処理をいれる
         else:
             fpath = os.path.join(os.path.dirname(__file__),'htmldir','write.html')
         html = template.render(fpath,params)

@@ -21,25 +21,44 @@ class MainPage(webapp.RequestHandler):
     def post(self):
         form = voting.votingform(self.request.POST)
         params = {
-            'errors':'入力エラーです。未入力の必須項目があります',
+            'Title':'入力エラーです。未入力の必須項目があります',
             'form':form
         }
         if form.is_valid():
             entity = form.save(commit=False)
-            #シリアルコードの桁数チェックをいれること（シリアルコードは16文字）
-            serial_decrypt = crpt.DecryptionMessage(entity.serialno)
-            if serial_decrypt > '00000000' and serial_decrypt < '100000000':
+            ErrorFlg = False
+            ErrorMsg = ""
+            # シリアルコードの桁数チェックをいれること（シリアルコードは16文字）
+            if len(entity.serialno) <> 16:
+                ErrorFlg = True
+                ErrorMsg = "シリアルコードの桁数が間違っています。"
+            else:
+                serial_check = voting.votingdata.gql("WHERE serialno = :checkno",checkno = entity.serialno)
+                if serial_check.count() == 0:
+                    serial_decrypt = crpt.DecryptionMessage(entity.serialno)
+                    if serial_decrypt > '00000000' and serial_decrypt < '100000000':
+                        params = {
+                            'name': entity.name,
+                            'serialno': entity.serialno
+                            }
+                        fpath = os.path.join(os.path.dirname(__file__),'htmldir','preview.html')
+                    else:
+                        ErrorFlg = True
+                        ErrorMsg = "不正なシリアルコードです。"
+                else:
+                    ErrorFlg = True
+                    ErrorMsg = "すでに使用済みのシリアルコードです。"
+            if ErrorFlg:
                 params = {
-                    'name': entity.name,
-                    'serialno': entity.serialno
-                }
-            fpath = os.path.join(os.path.dirname(__file__),'htmldir','preview.html')
-            #else:
-                #シリアルコードがおかしい場合の処理をいれる
+                    'Title':ErrorMsg,
+                    'form':voting.votingform()
+                    }
+                fpath = os.path.join(os.path.dirname(__file__),'htmldir','write.html')
         else:
             fpath = os.path.join(os.path.dirname(__file__),'htmldir','write.html')
         html = template.render(fpath,params)
         self.response.out.write(html)
+
         
 application = webapp.WSGIApplication([('/', MainPage)], debug=True)
 

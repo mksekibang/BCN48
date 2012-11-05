@@ -32,6 +32,6 @@ def DecryptionMessage(message):
 
 
 if __name__ == "__main__":
-    a = CryptionMessage("00000001")
+    a = CryptionMessage("00000003")
     print a
     print DecryptionMessage(a)
